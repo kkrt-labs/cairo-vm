@@ -15,6 +15,7 @@ use crate::{
 #[cfg(feature = "cairo-1-hints")]
 use cairo_lang_starknet::casm_contract_class::CasmContractClass;
 use felt::{Felt252, PRIME_STR};
+use serde::{Serialize, Deserialize, Serializer, Deserializer, ser::SerializeStruct};
 
 #[cfg(feature = "std")]
 use std::path::Path;
@@ -40,7 +41,7 @@ use std::path::Path;
 // exceptional circumstances, such as when reconstructing a backtrace on execution
 // failures.
 // Fields in `Program` (other than `SharedProgramData` itself) are used by the main logic.
-#[derive(Clone, Default, Debug, PartialEq, Eq)]
+#[derive(Clone, Default, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub(crate) struct SharedProgramData {
     pub(crate) data: Vec<MaybeRelocatable>,
     pub(crate) hints: HashMap<usize, Vec<HintParams>>,
@@ -59,6 +60,42 @@ pub struct Program {
     pub(crate) shared_program_data: Arc<SharedProgramData>,
     pub(crate) constants: HashMap<String, Felt252>,
     pub(crate) builtins: Vec<BuiltinName>,
+}
+
+impl Serialize for Program {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+    let mut program: <S as Serializer>::SerializeStruct = serializer.serialize_struct("Program",  3)?;
+    program.serialize_field("shared_program_data", self.shared_program_data.as_ref())?;
+    program.serialize_field("constants", &self.constants)?;
+    program.serialize_field("builtins", &self.builtins)?;
+
+    program.end()
+    }
+}
+
+impl<'de> Deserialize<'de> for Program {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        #[derive(Deserialize)]
+        struct InnerProgram {
+            shared_program_data: SharedProgramData,
+            constants: HashMap<String, Felt252>,
+            builtins: Vec<BuiltinName>,
+        }
+
+        let inner_program = InnerProgram::deserialize(deserializer)?;
+        Ok(
+            Program { shared_program_data: Arc::new(inner_program.shared_program_data),
+                constants: inner_program.constants,
+                builtins: inner_program.builtins
+            }
+        )
+    }
 }
 
 impl Program {
