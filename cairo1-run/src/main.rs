@@ -173,9 +173,8 @@ fn run(args: impl Iterator<Item = String>) -> Result<Vec<MaybeRelocatable>, Erro
         replace_ids: true,
         ..CompilerConfig::default()
     };
-    let sierra_program = (*compile_cairo_project_at_path(&args.filename, compiler_config)
-        .map_err(|err| Error::SierraCompilation(err.to_string()))?)
-    .clone();
+    let sierra_program = compile_cairo_project_at_path(&args.filename, compiler_config)
+        .map_err(|err| Error::SierraCompilation(err.to_string()))?;
 
     let metadata_config = Some(Default::default());
     let gas_usage_check = metadata_config.is_some();
@@ -202,7 +201,7 @@ fn run(args: impl Iterator<Item = String>) -> Result<Vec<MaybeRelocatable>, Erro
     let footer = create_code_footer();
 
     let check_gas_usage = true;
-    let metadata = calc_metadata(&sierra_program, Default::default(), false)?;
+    let metadata = calc_metadata(&sierra_program, Default::default())?;
     let casm_program = compile(&sierra_program, &metadata, check_gas_usage)?;
 
     let instructions = chain!(
@@ -294,12 +293,14 @@ fn run(args: impl Iterator<Item = String>) -> Result<Vec<MaybeRelocatable>, Erro
     runner.relocate(&mut vm, true)?;
 
     if let Some(trace_path) = args.trace_file {
-        let relocated_trace = vm.get_relocated_trace()?;
+        let relocated_trace = runner
+            .relocated_trace
+            .ok_or(Error::Trace(TraceError::TraceNotRelocated))?;
         let trace_file = std::fs::File::create(trace_path)?;
         let mut trace_writer =
             FileWriter::new(io::BufWriter::with_capacity(3 * 1024 * 1024, trace_file));
 
-        cairo_run::write_encoded_trace(relocated_trace, &mut trace_writer)?;
+        cairo_run::write_encoded_trace(&relocated_trace, &mut trace_writer)?;
         trace_writer.flush()?;
     }
     if let Some(memory_path) = args.memory_file {
@@ -537,7 +538,7 @@ fn create_metadata(
     metadata_config: Option<MetadataComputationConfig>,
 ) -> Result<Metadata, VirtualMachineError> {
     if let Some(metadata_config) = metadata_config {
-        calc_metadata(sierra_program, metadata_config, false).map_err(|err| match err {
+        calc_metadata(sierra_program, metadata_config).map_err(|err| match err {
             MetadataError::ApChangeError(_) => VirtualMachineError::Unexpected,
             MetadataError::CostError(_) => VirtualMachineError::Unexpected,
         })

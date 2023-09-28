@@ -1,6 +1,19 @@
 ## Cairo-VM Changelog
 
+* feat: add Serialize and Deserialize derivation for Program.
+
 #### Upcoming Changes
+
+* chore: update cairo deps.
+
+* BREAKING: Partially Revert `Optimize trace relocation #906` [#1492](https://github.com/lambdaclass/cairo-vm/pull/1492)
+
+  * Remove methods `VirtualMachine::get_relocated_trace`& `VirtualMachine::relocate_trace`.
+  * Add `relocated_trace` field  & `relocate_trace` method to `CairoRunner`.
+  * Swap `TraceEntry` for `RelocatedTraceEntry` type in `write_encoded_trace` & `PublicInput::new` signatures.
+  * Now takes into account the program counter's segment index when building the execution trace instead of assuming it to be 0.
+
+* feat: add debugging capabilities behind `print` feature flag. [#1476](https://github.com/lambdaclass/cairo-vm/pull/1476)
 
 #### [0.9.1] - 2023-11-16
 
