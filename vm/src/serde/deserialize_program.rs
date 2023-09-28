@@ -126,7 +126,7 @@ impl Default for ApTracking {
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub struct Identifier {
     pub pc: Option<usize>,
-    #[serde(rename(deserialize = "type"))]
+    #[serde(rename = "type")]
     pub type_: Option<String>,
     #[serde(default)]
     #[serde(deserialize_with = "felt_from_number")]
@@ -225,22 +225,48 @@ fn felt_from_number<'de, D>(deserializer: D) -> Result<Option<Felt252>, D::Error
 where
     D: Deserializer<'de>,
 {
-    let n = Number::deserialize(deserializer)?;
-    match Felt252::parse_bytes(n.to_string().as_bytes(), 10) {
-        Some(x) => Ok(Some(x)),
-        None => {
-            // Handle de Number with scientific notation cases
-            // e.g.: n = Number(1e27)
-            let felt = deserialize_scientific_notation(n);
-            if felt.is_some() {
-                return Ok(felt);
-            }
 
-            Err(de::Error::custom(String::from(
-                "felt_from_number parse error",
-            )))
-        }
+
+    // This value can be of 3 possible types
+    // Felt252, Number, None
+    #[derive(Serialize, Deserialize)]
+    #[serde(untagged)]
+    enum Tmp{
+        Felt252(Option<Number>),
+        SerializedFelt252(Felt252)
     }
+
+    let n: Tmp = Tmp::deserialize(deserializer)?;
+
+    match n {
+        Tmp::Felt252(n) => {
+            match n {
+                Some(n) => {
+                    match Felt252::parse_bytes(n.to_string().as_bytes(), 10) {
+                        Some(x) => Ok(Some(x)),
+                        None => {
+                            // Handle de Number with scientific notation cases
+                            // e.g.: n = Number(1e27)
+                            let felt = deserialize_scientific_notation(n);
+                            if felt.is_some() {
+                                return Ok(felt);
+                            }
+
+                            Err(de::Error::custom(String::from(
+                                "felt_from_number parse error",
+                            )))
+                        }
+                }
+            },
+                None => {
+                    Ok(None)
+                }
+        }
+    },
+    Tmp::SerializedFelt252 (value ) => {
+        Ok(Some(value))
+    }
+}
 }
 
 fn deserialize_scientific_notation(n: Number) -> Option<Felt252> {
@@ -580,7 +606,7 @@ mod tests {
                 "attributes": [],
                 "debug_info": {
                     "instruction_locations": {}
-                }, 
+                },
                 "builtins": [],
                 "data": [
                     "0x480680017fff8000",
@@ -1107,7 +1133,7 @@ mod tests {
                 "attributes": [],
                 "debug_info": {
                     "instruction_locations": {}
-                },  
+                },
                 "builtins": [],
                 "data": [
                 ],
@@ -1188,10 +1214,10 @@ mod tests {
                         "start_pc": 402,
                         "value": "SafeUint256: subtraction overflow"
                     }
-                ], 
+                ],
                 "debug_info": {
                     "instruction_locations": {}
-                },           
+                },
                 "builtins": [],
                 "data": [
                 ],
@@ -1245,7 +1271,7 @@ mod tests {
         let valid_json = r#"
             {
                 "prime": "0x800000000000011000000000000000000000000000000000000000000000001",
-                "attributes": [], 
+                "attributes": [],
                 "debug_info": {
                     "file_contents": {},
                     "instruction_locations": {
@@ -1296,7 +1322,7 @@ mod tests {
                             }
                         }
                     }
-                },          
+                },
                 "builtins": [],
                 "data": [
                 ],
@@ -1354,7 +1380,7 @@ mod tests {
         let valid_json = r#"
             {
                 "prime": "0x800000000000011000000000000000000000000000000000000000000000001",
-                "attributes": [], 
+                "attributes": [],
                 "debug_info": {
                     "file_contents": {},
                     "instruction_locations": {
@@ -1401,7 +1427,7 @@ mod tests {
                             }
                         }
                     }
-                },          
+                },
                 "builtins": [],
                 "data": [
                 ],

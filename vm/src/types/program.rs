@@ -27,6 +27,7 @@ use crate::{
 use cairo_lang_starknet::casm_contract_class::CasmContractClass;
 use core::num::NonZeroUsize;
 use felt::{Felt252, PRIME_STR};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 #[cfg(feature = "std")]
 use std::path::Path;
@@ -55,18 +56,18 @@ use arbitrary::{Arbitrary, Unstructured};
 // exceptional circumstances, such as when reconstructing a backtrace on execution
 // failures.
 // Fields in `Program` (other than `SharedProgramData` itself) are used by the main logic.
-#[derive(Clone, Default, Debug, PartialEq, Eq)]
-pub(crate) struct SharedProgramData {
-    pub(crate) data: Vec<MaybeRelocatable>,
-    pub(crate) hints_collection: HintsCollection,
-    pub(crate) main: Option<usize>,
+#[derive(Clone, Default, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SharedProgramData {
+    pub data: Vec<MaybeRelocatable>,
+    pub hints_collection: HintsCollection,
+    pub main: Option<usize>,
     //start and end labels will only be used in proof-mode
-    pub(crate) start: Option<usize>,
-    pub(crate) end: Option<usize>,
-    pub(crate) error_message_attributes: Vec<Attribute>,
-    pub(crate) instruction_locations: Option<HashMap<usize, InstructionLocation>>,
-    pub(crate) identifiers: HashMap<String, Identifier>,
-    pub(crate) reference_manager: Vec<HintReference>,
+    pub start: Option<usize>,
+    pub end: Option<usize>,
+    pub error_message_attributes: Vec<Attribute>,
+    pub instruction_locations: Option<HashMap<usize, InstructionLocation>>,
+    pub identifiers: HashMap<String, Identifier>,
+    pub reference_manager: Vec<HintReference>,
 }
 
 #[cfg(all(feature = "arbitrary", feature = "std"))]
@@ -102,8 +103,8 @@ impl<'a> Arbitrary<'a> for SharedProgramData {
     }
 }
 
-#[derive(Clone, Default, Debug, PartialEq, Eq)]
-pub(crate) struct HintsCollection {
+#[derive(Clone, Default, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct HintsCollection {
     hints: Vec<HintParams>,
     /// This maps a PC to the range of hints in `hints` that correspond to it.
     hints_ranges: Vec<HintRange>,
@@ -176,11 +177,35 @@ impl From<&HintsCollection> for BTreeMap<usize, Vec<HintParams>> {
 type HintRange = Option<(usize, NonZeroUsize)>;
 
 #[cfg_attr(all(feature = "arbitrary", feature = "std"), derive(Arbitrary))]
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Program {
-    pub(crate) shared_program_data: Arc<SharedProgramData>,
-    pub(crate) constants: HashMap<String, Felt252>,
-    pub(crate) builtins: Vec<BuiltinName>,
+    #[serde(
+        serialize_with = "serialize_shared_program_data",
+        deserialize_with = "deserialize_shared_program_data"
+    )]
+    pub shared_program_data: Arc<SharedProgramData>,
+    pub constants: HashMap<String, Felt252>,
+    pub builtins: Vec<BuiltinName>,
+}
+
+pub fn serialize_shared_program_data<S>(
+    shared_program_data: &Arc<SharedProgramData>,
+    serializer: S,
+) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    shared_program_data.serialize(serializer)
+}
+
+pub fn deserialize_shared_program_data<'de, D>(
+    deserializer: D,
+) -> Result<Arc<SharedProgramData>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let shared_program_data = SharedProgramData::deserialize(deserializer)?;
+    Ok(Arc::new(shared_program_data))
 }
 
 impl Program {
