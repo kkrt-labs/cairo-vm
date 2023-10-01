@@ -161,6 +161,18 @@ impl Program {
         self.shared_program_data.data.iter()
     }
 
+    pub fn iter_hints(&self) -> impl Iterator<Item = (&usize, &Vec<HintParams>)> {
+        self.shared_program_data.hints.iter()
+    }
+
+    pub fn iter_error_message_attributes(&self) -> impl Iterator<Item = &Attribute> {
+        self.shared_program_data.error_message_attributes.iter()
+    }
+
+    pub fn iter_reference_manager(&self) -> impl Iterator<Item = &HintReference> {
+        self.shared_program_data.reference_manager.iter()
+    }
+
     pub fn data_len(&self) -> usize {
         self.shared_program_data.data.len()
     }
