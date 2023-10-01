@@ -21,6 +21,8 @@ use crate::{
 };
 #[cfg(feature = "cairo-1-hints")]
 use cairo_lang_starknet::casm_contract_class::CasmContractClass;
+use serde::{Serialize, Deserialize, Serializer, Deserializer };
+use serde::ser::SerializeStruct;
 use core::num::NonZeroUsize;
 use felt::{Felt252, PRIME_STR};
 
@@ -51,7 +53,7 @@ use arbitrary::{Arbitrary, Unstructured};
 // exceptional circumstances, such as when reconstructing a backtrace on execution
 // failures.
 // Fields in `Program` (other than `SharedProgramData` itself) are used by the main logic.
-#[derive(Clone, Default, Debug, PartialEq, Eq)]
+#[derive(Clone, Default, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub(crate) struct SharedProgramData {
     pub(crate) data: Vec<MaybeRelocatable>,
     pub(crate) hints_collection: HintsCollection,
@@ -98,7 +100,7 @@ impl<'a> Arbitrary<'a> for SharedProgramData {
     }
 }
 
-#[derive(Clone, Default, Debug, PartialEq, Eq)]
+#[derive(Clone, Default, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub(crate) struct HintsCollection {
     hints: Vec<HintParams>,
     /// This maps a PC to the range of hints in `hints` that correspond to it.
@@ -164,6 +166,42 @@ pub struct Program {
     pub(crate) shared_program_data: Arc<SharedProgramData>,
     pub(crate) constants: HashMap<String, Felt252>,
     pub(crate) builtins: Vec<BuiltinName>,
+}
+
+impl Serialize for Program {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+    let mut program: <S as Serializer>::SerializeStruct = serializer.serialize_struct("Program",  3)?;
+    program.serialize_field("shared_program_data", self.shared_program_data.as_ref())?;
+    program.serialize_field("constants", &self.constants)?;
+    program.serialize_field("builtins", &self.builtins)?;
+
+    program.end()
+    }
+}
+
+impl<'de> Deserialize<'de> for Program {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        #[derive(Deserialize)]
+        struct InnerProgram {
+            shared_program_data: SharedProgramData,
+            constants: HashMap<String, Felt252>,
+            builtins: Vec<BuiltinName>,
+        }
+
+        let inner_program = InnerProgram::deserialize(deserializer)?;
+        Ok(
+            Program { shared_program_data: Arc::new(inner_program.shared_program_data),
+                constants: inner_program.constants,
+                builtins: inner_program.builtins
+            }
+        )
+    }
 }
 
 impl Program {
@@ -256,6 +294,14 @@ impl Program {
 
     pub fn iter_data(&self) -> impl Iterator<Item = &MaybeRelocatable> {
         self.shared_program_data.data.iter()
+    }
+
+    pub fn iter_error_message_attributes(&self) -> impl Iterator<Item = &Attribute> {
+        self.shared_program_data.error_message_attributes.iter()
+    }
+
+    pub fn iter_reference_manager(&self) -> impl Iterator<Item = &HintReference> {
+        self.shared_program_data.reference_manager.iter()
     }
 
     pub fn data_len(&self) -> usize {
@@ -406,6 +452,7 @@ impl HintsCollection {
             })
     }
 }
+
 
 #[cfg(test)]
 mod tests {
