@@ -83,9 +83,9 @@ impl<'de> Deserialize<'de> for Program {
     {
         #[derive(Deserialize)]
         struct InnerProgram {
-            shared_program_data: SharedProgramData,
-            constants: HashMap<String, Felt252>,
-            builtins: Vec<BuiltinName>,
+            pub shared_program_data: SharedProgramData,
+            pub constants: HashMap<String, Felt252>,
+            pub builtins: Vec<BuiltinName>,
         }
 
         let inner_program = InnerProgram::deserialize(deserializer)?;
