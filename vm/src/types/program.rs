@@ -81,6 +81,10 @@ impl<'de> Deserialize<'de> for Program {
     where
         D: Deserializer<'de>,
     {
+
+        //TODO(harsh): remove
+        println!("reaching in the deserialization of Program");
+
         #[derive(Deserialize)]
         struct InnerProgram {
             pub shared_program_data: SharedProgramData,
@@ -89,6 +93,10 @@ impl<'de> Deserialize<'de> for Program {
         }
 
         let inner_program = InnerProgram::deserialize(deserializer)?;
+
+        //TODO(harsh): remove
+        println!("deserialization succeeded");
+
         Ok(
             Program { shared_program_data: Arc::new(inner_program.shared_program_data),
                 constants: inner_program.constants,
