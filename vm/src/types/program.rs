@@ -42,7 +42,7 @@ use std::path::Path;
 // failures.
 // Fields in `Program` (other than `SharedProgramData` itself) are used by the main logic.
 #[derive(Clone, Default, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub(crate) struct SharedProgramData {
+pub struct SharedProgramData {
     pub(crate) data: Vec<MaybeRelocatable>,
     // #[serde(deserialize_with = "deserialize_hints")]
     pub(crate) hints: HashMap<usize, Vec<HintParams>>,
