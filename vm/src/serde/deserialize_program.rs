@@ -16,7 +16,6 @@ use crate::{
     },
 };
 use felt::{Felt252, PRIME_STR};
-use num_bigint::BigInt;
 use num_traits::float::FloatCore;
 use num_traits::{Num, Pow};
 use serde::{de, de::MapAccess, de::SeqAccess, Deserialize, Deserializer, Serialize};
@@ -186,7 +185,7 @@ where
     #[serde(untagged)]
     enum Tmp{
         Felt252(Option<Number>),
-        SerializedFelt252(BigInt)
+        SerializedFelt252(Felt252)
     }
 
     let n: Tmp = Tmp::deserialize(deserializer)?;
@@ -217,10 +216,10 @@ where
         }
     },
     Tmp::SerializedFelt252 (value ) => {
-        let value = value.to_str_radix(10);
-        let value = Felt252::from_str_radix(&value, 10).map_err(|error|{
-            de::Error::custom(format!("failed to convert big {} to type Felt252,\n error: {}", value, error))
-        })?;
+        // let value = value.to_str_radix(10);
+        // let value = Felt252::from_str_radix(&value, 10).map_err(|error|{
+        //     de::Error::custom(format!("failed to convert big {} to type Felt252,\n error: {}", value, error))
+        // })?;
         Ok(Some(value))
     }
 }
