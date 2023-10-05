@@ -106,7 +106,7 @@ pub struct Identifier {
     #[serde(rename(deserialize = "type"))]
     pub type_: Option<String>,
     #[serde(default)]
-    #[serde(deserialize_with = "felt_from_number")]
+    // #[serde(deserialize_with = "felt_from_number")]
     pub value: Option<Felt252>,
 
     pub full_name: Option<String>,
@@ -165,6 +165,16 @@ fn felt_from_number<'de, D>(deserializer: D) -> Result<Option<Felt252>, D::Error
 where
     D: Deserializer<'de>,
 {
+
+    #[derive(Serialize, Deserialize)]
+    #[serde(untagged)]
+    enum Tmp
+    {
+        Option<>
+    }
+
+
+
     let n = Number::deserialize(deserializer)?;
     match Felt252::parse_bytes(n.to_string().as_bytes(), 10) {
         Some(x) => Ok(Some(x)),
