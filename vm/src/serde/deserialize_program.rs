@@ -16,9 +16,9 @@ use crate::{
     },
 };
 use felt::{Felt252, PRIME_STR};
+use num_bigint::BigInt;
 use num_traits::float::FloatCore;
 use num_traits::{Num, Pow};
-use serde::Serializer;
 use serde::{de, de::MapAccess, de::SeqAccess, Deserialize, Deserializer, Serialize};
 use serde_json::Number;
 
@@ -107,7 +107,7 @@ pub struct Identifier {
     #[serde(rename(deserialize = "type"))]
     pub type_: Option<String>,
     #[serde(default)]
-    #[serde(serialize_with = "serialize_value",deserialize_with = "felt_from_number")]
+    #[serde(deserialize_with = "felt_from_number")]
     pub value: Option<Felt252>,
 
     pub full_name: Option<String>,
@@ -162,19 +162,19 @@ pub struct HintLocation {
     pub n_prefix_newlines: u32,
 }
 
-fn serialize_value<S>(value: &Option<Felt252>,serializer: S) -> Result<S::Ok, S::Error>
-    where S: Serializer
-{
-    match value {
-        Some(value) => {
-           let value = value.to_str_radix(10);
-           serializer.serialize_str(&value)
-        }
-        None => {
-            serializer.serialize_none()
-        }
-    }
-}
+// fn serialize_value<S>(value: &Option<Felt252>,serializer: S) -> Result<S::Ok, S::Error>
+//     where S: Serializer
+// {
+//     match value {
+//         Some(value) => {
+//            let value = value.to_str_radix(10);
+//            serializer.serialize_str(&value)
+//         }
+//         None => {
+//             serializer.serialize_none()
+//         }
+//     }
+// }
 
 fn felt_from_number<'de, D>(deserializer: D) -> Result<Option<Felt252>, D::Error>
 where
@@ -183,13 +183,16 @@ where
     #[derive(Serialize, Deserialize)]
     #[serde(untagged)]
     enum Tmp{
-        Some(Option<Number>)
+        Felt252(Option<Number>),
+        SerializedFelt252 {
+            val: BigInt
+        }
     }
 
     let n: Tmp = Tmp::deserialize(deserializer)?;
 
     match n {
-        Tmp::Some(n) => {
+        Tmp::Felt252(n) => {
             match n {
                 Some(n) => {
                     match Felt252::parse_bytes(n.to_string().as_bytes(), 10) {
@@ -212,7 +215,15 @@ where
                     Ok(None)
                 }
         }
+    },
+    Tmp::SerializedFelt252 { val } => {
+        let value = val.to_str_radix(10);
+        let value = Felt252::from_str_radix(&value, 10).map_err(|error|{
+            de::Error::custom(format!("failed to convert big {} to type Felt252,\n error: {}", val, error))
+        })?;
+        Ok(Some(value))
     }
+
     }
 }
 
