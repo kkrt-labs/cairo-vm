@@ -180,12 +180,19 @@ fn felt_from_number<'de, D>(deserializer: D) -> Result<Option<Felt252>, D::Error
 where
     D: Deserializer<'de>,
 {
+
+
+    #[derive(Serialize, Deserialize)]
+    struct TmpFelt252SerializedValue  {
+        val: BigInt
+    }
+
     #[derive(Serialize, Deserialize)]
     #[serde(untagged)]
     enum Tmp{
         Felt252(Option<Number>),
         SerializedFelt252 {
-            val: BigInt
+            value: TmpFelt252SerializedValue
         }
     }
 
@@ -216,15 +223,14 @@ where
                 }
         }
     },
-    Tmp::SerializedFelt252 { val } => {
-        let value = val.to_str_radix(10);
+    Tmp::SerializedFelt252 { value } => {
+        let value = value.val.to_str_radix(10);
         let value = Felt252::from_str_radix(&value, 10).map_err(|error|{
-            de::Error::custom(format!("failed to convert big {} to type Felt252,\n error: {}", val, error))
+            de::Error::custom(format!("failed to convert big {} to type Felt252,\n error: {}", value, error))
         })?;
         Ok(Some(value))
     }
-
-    }
+}
 }
 
 fn deserialize_scientific_notation(n: Number) -> Option<Felt252> {
