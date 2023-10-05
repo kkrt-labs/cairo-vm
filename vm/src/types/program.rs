@@ -15,7 +15,7 @@ use crate::{
 #[cfg(feature = "cairo-1-hints")]
 use cairo_lang_starknet::casm_contract_class::CasmContractClass;
 use felt::{Felt252, PRIME_STR};
-use serde::{Serialize, Deserialize, Serializer, Deserializer, ser::SerializeStruct};
+use serde::{Serialize, Deserialize, Serializer, Deserializer, ser::SerializeStruct };
 
 #[cfg(feature = "std")]
 use std::path::Path;
@@ -44,6 +44,7 @@ use std::path::Path;
 #[derive(Clone, Default, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub(crate) struct SharedProgramData {
     pub(crate) data: Vec<MaybeRelocatable>,
+    #[serde(deserialize_with = "deserialize_hints")]
     pub(crate) hints: HashMap<usize, Vec<HintParams>>,
     pub(crate) main: Option<usize>,
     //start and end labels will only be used in proof-mode
@@ -53,6 +54,44 @@ pub(crate) struct SharedProgramData {
     pub(crate) instruction_locations: Option<HashMap<usize, InstructionLocation>>,
     pub(crate) identifiers: HashMap<String, Identifier>,
     pub(crate) reference_manager: Vec<HintReference>,
+}
+
+/// Converts the program type from SN API into a Cairo VM-compatible type.
+pub fn deserialize_hints<'de, D: Deserializer<'de>>(
+    deserializer: D,
+) -> Result<HashMap<usize,Vec<HintParams>>, D::Error> {
+
+    #[derive(Serialize, Deserialize)]
+    #[serde(untagged)]
+    enum Tmp{
+        StringKey(HashMap<String, Vec<HintParams>>),
+        UsizeKey(HashMap<usize, Vec<HintParams>>)
+    }
+
+    let value = Tmp::deserialize(deserializer)?;
+
+    let result = match value {
+        Tmp::StringKey(value) => {
+            let mut hash_map: HashMap<usize, Vec<HintParams>> = HashMap::new();
+            value.into_iter().for_each(|(k, v)|{
+                //TODO(harsh): is there a way to avoid panic
+                let usize_key=  usize::from_str_radix(&k, 10).unwrap_or_else(|error|{
+                        panic!("failed to parse usize from value {},\n error {}", &k, error)
+                });
+
+                hash_map.insert(usize_key, v);
+            });
+
+            hash_map
+        }
+        Tmp::UsizeKey(value) => {
+            value
+        }
+    };
+
+    Ok(result)
+
+
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
