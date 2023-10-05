@@ -183,17 +183,10 @@ where
 
 
     #[derive(Serialize, Deserialize)]
-    struct TmpFelt252SerializedValue  {
-        val: BigInt
-    }
-
-    #[derive(Serialize, Deserialize)]
     #[serde(untagged)]
     enum Tmp{
         Felt252(Option<Number>),
-        SerializedFelt252 {
-            value: TmpFelt252SerializedValue
-        }
+        SerializedFelt252(BigInt)
     }
 
     let n: Tmp = Tmp::deserialize(deserializer)?;
@@ -223,8 +216,8 @@ where
                 }
         }
     },
-    Tmp::SerializedFelt252 { value } => {
-        let value = value.val.to_str_radix(10);
+    Tmp::SerializedFelt252 (value ) => {
+        let value = value.to_str_radix(10);
         let value = Felt252::from_str_radix(&value, 10).map_err(|error|{
             de::Error::custom(format!("failed to convert big {} to type Felt252,\n error: {}", value, error))
         })?;
