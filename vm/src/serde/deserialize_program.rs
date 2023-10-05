@@ -106,7 +106,7 @@ pub struct Identifier {
     #[serde(rename(deserialize = "type"))]
     pub type_: Option<String>,
     #[serde(default)]
-    // #[serde(deserialize_with = "felt_from_number")]
+    #[serde(deserialize_with = "felt_from_number")]
     pub value: Option<Felt252>,
 
     pub full_name: Option<String>,
@@ -165,31 +165,39 @@ fn felt_from_number<'de, D>(deserializer: D) -> Result<Option<Felt252>, D::Error
 where
     D: Deserializer<'de>,
 {
-
     #[derive(Serialize, Deserialize)]
     #[serde(untagged)]
-    enum Tmp
-    {
-        Option<>
+    enum Tmp{
+        Some(Option<Number>)
     }
 
+    let n: Tmp = Tmp::deserialize(deserializer)?;
 
+    match n {
+        Tmp::Some(n) => {
+            match n {
+                Some(n) => {
+                    match Felt252::parse_bytes(n.to_string().as_bytes(), 10) {
+                        Some(x) => Ok(Some(x)),
+                        None => {
+                            // Handle de Number with scientific notation cases
+                            // e.g.: n = Number(1e27)
+                            let felt = deserialize_scientific_notation(n);
+                            if felt.is_some() {
+                                return Ok(felt);
+                            }
 
-    let n = Number::deserialize(deserializer)?;
-    match Felt252::parse_bytes(n.to_string().as_bytes(), 10) {
-        Some(x) => Ok(Some(x)),
-        None => {
-            // Handle de Number with scientific notation cases
-            // e.g.: n = Number(1e27)
-            let felt = deserialize_scientific_notation(n);
-            if felt.is_some() {
-                return Ok(felt);
-            }
-
-            Err(de::Error::custom(String::from(
-                "felt_from_number parse error",
-            )))
+                            Err(de::Error::custom(String::from(
+                                "felt_from_number parse error",
+                            )))
+                        }
+                }
+            },
+                None => {
+                    Ok(None)
+                }
         }
+    }
     }
 }
 
