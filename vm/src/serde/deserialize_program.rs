@@ -18,6 +18,7 @@ use crate::{
 use felt::{Felt252, PRIME_STR};
 use num_traits::float::FloatCore;
 use num_traits::{Num, Pow};
+use serde::Serializer;
 use serde::{de, de::MapAccess, de::SeqAccess, Deserialize, Deserializer, Serialize};
 use serde_json::Number;
 
@@ -106,7 +107,7 @@ pub struct Identifier {
     #[serde(rename(deserialize = "type"))]
     pub type_: Option<String>,
     #[serde(default)]
-    #[serde(deserialize_with = "felt_from_number")]
+    #[serde(serialize_with = "serialize_value",deserialize_with = "felt_from_number")]
     pub value: Option<Felt252>,
 
     pub full_name: Option<String>,
@@ -159,6 +160,20 @@ pub struct InputFile {
 pub struct HintLocation {
     pub location: Location,
     pub n_prefix_newlines: u32,
+}
+
+fn serialize_value<S>(value: &Option<Felt252>,serializer: S) -> Result<S::Ok, S::Error>
+    where S: Serializer
+{
+    match value {
+        Some(value) => {
+           let value = value.to_str_radix(10);
+           serializer.serialize_str(&value)
+        }
+        None => {
+            serializer.serialize_none()
+        }
+    }
 }
 
 fn felt_from_number<'de, D>(deserializer: D) -> Result<Option<Felt252>, D::Error>
