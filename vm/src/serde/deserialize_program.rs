@@ -161,20 +161,6 @@ pub struct HintLocation {
     pub n_prefix_newlines: u32,
 }
 
-// fn serialize_value<S>(value: &Option<Felt252>,serializer: S) -> Result<S::Ok, S::Error>
-//     where S: Serializer
-// {
-//     match value {
-//         Some(value) => {
-//            let value = value.to_str_radix(10);
-//            serializer.serialize_str(&value)
-//         }
-//         None => {
-//             serializer.serialize_none()
-//         }
-//     }
-// }
-
 fn felt_from_number<'de, D>(deserializer: D) -> Result<Option<Felt252>, D::Error>
 where
     D: Deserializer<'de>,
@@ -216,10 +202,6 @@ where
         }
     },
     Tmp::SerializedFelt252 (value ) => {
-        // let value = value.to_str_radix(10);
-        // let value = Felt252::from_str_radix(&value, 10).map_err(|error|{
-        //     de::Error::custom(format!("failed to convert big {} to type Felt252,\n error: {}", value, error))
-        // })?;
         Ok(Some(value))
     }
 }
@@ -354,14 +336,9 @@ impl<'de> de::Visitor<'de> for ReferenceIdsVisitor {
     where
         A: MapAccess<'de>,
     {
-        //TODO(harsh): remove
-        println!("inside the custom visitor");
-
         let mut data: HashMap<String, usize> = HashMap::new();
 
         while let Some((key, value)) = map.next_entry::<String, usize>()? {
-            //TODO(harsh): remove
-            println!("going for data insertion k: {}, v: {}", key, value);
             data.insert(key, value);
         }
 

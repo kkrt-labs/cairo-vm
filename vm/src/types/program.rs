@@ -44,7 +44,6 @@ use std::path::Path;
 #[derive(Clone, Default, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SharedProgramData {
     pub data: Vec<MaybeRelocatable>,
-    // #[serde(deserialize_with = "deserialize_hints")]
     pub hints: HashMap<usize, Vec<HintParams>>,
     pub main: Option<usize>,
     //start and end labels will only be used in proof-mode
@@ -56,43 +55,6 @@ pub struct SharedProgramData {
     pub reference_manager: Vec<HintReference>,
 }
 
-// /// Converts the program type from SN API into a Cairo VM-compatible type.
-// pub fn deserialize_hints<'de, D: Deserializer<'de>>(
-//     deserializer: D,
-// ) -> Result<HashMap<usize,Vec<HintParams>>, D::Error> {
-
-//     #[derive(Serialize, Deserialize)]
-//     #[serde(untagged)]
-//     enum Tmp{
-//         StringKey(HashMap<String, Vec<HintParams>>),
-//         UsizeKey(HashMap<usize, Vec<HintParams>>)
-//     }
-
-//     let value = Tmp::deserialize(deserializer)?;
-
-//     let result = match value {
-//         Tmp::StringKey(value) => {
-//             let mut hash_map: HashMap<usize, Vec<HintParams>> = HashMap::new();
-//             value.into_iter().for_each(|(k, v)|{
-//                 //TODO(harsh): is there a way to avoid panic
-//                 let usize_key=  usize::from_str_radix(&k, 10).unwrap_or_else(|error|{
-//                         panic!("failed to parse usize from value {},\n error {}", &k, error)
-//                 });
-
-//                 hash_map.insert(usize_key, v);
-//             });
-
-//             hash_map
-//         }
-//         Tmp::UsizeKey(value) => {
-//             value
-//         }
-//     };
-
-//     Ok(result)
-
-
-// }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Program {
@@ -121,9 +83,6 @@ impl<'de> Deserialize<'de> for Program {
         D: Deserializer<'de>,
     {
 
-        //TODO(harsh): remove
-        println!("reaching in the deserialization of Program");
-
         #[derive(Deserialize)]
         struct InnerProgram {
             pub shared_program_data: SharedProgramData,
@@ -132,9 +91,6 @@ impl<'de> Deserialize<'de> for Program {
         }
 
         let inner_program = InnerProgram::deserialize(deserializer)?;
-
-        //TODO(harsh): remove
-        println!("deserialization succeeded");
 
         Ok(
             Program { shared_program_data: Arc::new(inner_program.shared_program_data),
@@ -206,18 +162,6 @@ impl Program {
 
     pub fn iter_data(&self) -> impl Iterator<Item = &MaybeRelocatable> {
         self.shared_program_data.data.iter()
-    }
-
-    pub fn iter_hints(&self) -> impl Iterator<Item = (&usize, &Vec<HintParams>)> {
-        self.shared_program_data.hints.iter()
-    }
-
-    pub fn iter_error_message_attributes(&self) -> impl Iterator<Item = &Attribute> {
-        self.shared_program_data.error_message_attributes.iter()
-    }
-
-    pub fn iter_reference_manager(&self) -> impl Iterator<Item = &HintReference> {
-        self.shared_program_data.reference_manager.iter()
     }
 
     pub fn data_len(&self) -> usize {
