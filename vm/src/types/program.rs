@@ -15,7 +15,7 @@ use crate::{
 #[cfg(feature = "cairo-1-hints")]
 use cairo_lang_starknet::casm_contract_class::CasmContractClass;
 use felt::{Felt252, PRIME_STR};
-use serde::{Serialize, Deserialize, Serializer, Deserializer, ser::SerializeStruct };
+use serde::{Serialize, Deserialize, Serializer, Deserializer};
 
 #[cfg(feature = "std")]
 use std::path::Path;
@@ -56,50 +56,32 @@ pub struct SharedProgramData {
 }
 
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Program {
+    #[serde(serialize_with = "serialize_shared_program_data", deserialize_with = "deserialize_shared_program_data")]
     pub shared_program_data: Arc<SharedProgramData>,
     pub constants: HashMap<String, Felt252>,
     pub builtins: Vec<BuiltinName>,
 }
 
-impl Serialize for Program {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-    let mut program: <S as Serializer>::SerializeStruct = serializer.serialize_struct("Program",  3)?;
-    program.serialize_field("shared_program_data", self.shared_program_data.as_ref())?;
-    program.serialize_field("constants", &self.constants)?;
-    program.serialize_field("builtins", &self.builtins)?;
 
-    program.end()
-    }
+
+pub fn serialize_shared_program_data<S>(shared_program_data: &Arc<SharedProgramData>, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer
+{
+    shared_program_data.serialize(serializer)
 }
 
-impl<'de> Deserialize<'de> for Program {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-
-        #[derive(Deserialize)]
-        struct InnerProgram {
-            pub shared_program_data: SharedProgramData,
-            pub constants: HashMap<String, Felt252>,
-            pub builtins: Vec<BuiltinName>,
-        }
-
-        let inner_program = InnerProgram::deserialize(deserializer)?;
-
-        Ok(
-            Program { shared_program_data: Arc::new(inner_program.shared_program_data),
-                constants: inner_program.constants,
-                builtins: inner_program.builtins
-            }
-        )
-    }
+pub fn deserialize_shared_program_data<'de, D>(deserializer: D)
+    -> Result<Arc<SharedProgramData>, D::Error>
+where
+    D: Deserializer<'de>
+{
+    let shared_program_data =SharedProgramData::deserialize(deserializer)?;
+    Ok(Arc::new(shared_program_data))
 }
+
 
 impl Program {
     #[allow(clippy::too_many_arguments)]
