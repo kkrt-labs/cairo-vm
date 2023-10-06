@@ -167,6 +167,8 @@ where
 {
 
 
+    // This value can be of 3 possible types
+    // Felt252, Number, None
     #[derive(Serialize, Deserialize)]
     #[serde(untagged)]
     enum Tmp{
