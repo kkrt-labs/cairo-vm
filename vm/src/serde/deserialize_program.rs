@@ -103,7 +103,7 @@ impl Default for ApTracking {
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 pub struct Identifier {
     pub pc: Option<usize>,
-    #[serde(rename(deserialize = "type"))]
+    #[serde(rename = "type")]
     pub type_: Option<String>,
     #[serde(default)]
     #[serde(deserialize_with = "felt_from_number")]
