@@ -225,15 +225,13 @@ fn felt_from_number<'de, D>(deserializer: D) -> Result<Option<Felt252>, D::Error
 where
     D: Deserializer<'de>,
 {
-
-
     // This value can be of 3 possible types
     // Felt252, Number, None
     #[derive(Serialize, Deserialize)]
     #[serde(untagged)]
-    enum Tmp{
+    enum Tmp {
         Felt252(Option<Number>),
-        SerializedFelt252(Felt252)
+        SerializedFelt252(Felt252),
     }
 
     let n: Tmp = Tmp::deserialize(deserializer)?;
@@ -256,17 +254,13 @@ where
                                 "felt_from_number parse error",
                             )))
                         }
+                    }
                 }
-            },
-                None => {
-                    Ok(None)
-                }
+                None => Ok(None),
+            }
         }
-    },
-    Tmp::SerializedFelt252 (value ) => {
-        Ok(Some(value))
+        Tmp::SerializedFelt252(value) => Ok(Some(value)),
     }
-}
 }
 
 fn deserialize_scientific_notation(n: Number) -> Option<Felt252> {

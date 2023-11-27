@@ -1,5 +1,7 @@
 ## Cairo-VM Changelog
 
+* feat: add Serialize and Deserialize derivation for Program.
+
 #### Upcoming Changes
 
 * BREAKING: Partially Revert `Optimize trace relocation #906` [#1492](https://github.com/lambdaclass/cairo-vm/pull/1492)
