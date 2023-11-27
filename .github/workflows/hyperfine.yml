@@ -11,21 +11,6 @@ concurrency:
 env:
   CARGO_TERM_COLOR: always
 
-permissions:
-  actions: write
-  checks: write
-  contents: write
-  deployments: write
-  id-token: write
-  issues: write
-  discussions: write
-  packages: write
-  pages: write
-  pull-requests: write
-  repository-projects: write
-  security-events: write
-  statuses: write
-
 jobs:
   build-programs:
     strategy:
@@ -200,6 +185,7 @@ jobs:
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body-path: comment_body.md
+          permissions: write
 
       - name: Update comment
         if: steps.fc.outputs.comment-id != '' && steps.run-benchmarks.outputs.benchmark_count != 0
