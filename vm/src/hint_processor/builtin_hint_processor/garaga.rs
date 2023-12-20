@@ -1,3 +1,10 @@
+//! # Garaga Module
+//!
+//! Implementation of elliptic curve math hints, coupled with Garaga Cairo repository.
+//! These hints are used jointly with Garaga to enable efficient pairing operations in Starknet,
+//! by using polynomial representation of field elements.
+//! Source: <https://github.com/keep-starknet-strange/garaga/tree/main>
+
 use crate::stdlib::collections::HashMap;
 use crate::stdlib::prelude::String;
 
@@ -14,7 +21,7 @@ use super::hint_utils::{get_integer_from_var_name, insert_value_from_var_name};
 /// x = ids.x,
 /// ids.bit_length = x.bit_length()
 /// ```
-pub fn get_felt_bitlenght(
+pub fn get_felt_bitlength(
     vm: &mut VirtualMachine,
     ids_data: &HashMap<String, HintReference>,
     ap_tracking: &ApTracking,
