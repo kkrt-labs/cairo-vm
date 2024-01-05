@@ -32,6 +32,10 @@ lambdaworks-felt = ["felt/lambdaworks-felt"]
 # For a usage example checkout vm/src/tests/run_deprecated_contract_class_simplified.rs
 extensive_hints = []
 
+# Garaga features: Hints that enable efficient pairing operations in Starknet,
+# by using polynomial representation of field elements.
+garaga = []
+
 # Note that these features are not retro-compatible with the cairo Python VM.
 test_utils = [
     "skip_next_instruction_hint",

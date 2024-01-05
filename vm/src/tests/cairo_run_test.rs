@@ -1061,3 +1061,10 @@ fn cairo_run_print_dict_array() {
         include_bytes!("../../../cairo_programs/print_feature/print_dict_array.json");
     run_program_simple_with_memory_holes(program_data, 4);
 }
+
+#[test]
+#[cfg(feature = "garaga")]
+fn garaga_bigint_add_sub() {
+    let program_data = include_bytes!("../../../cairo_programs/garaga/fq_bigint3_add_sub.json");
+    run_program_simple_with_memory_holes(program_data, 3);
+}

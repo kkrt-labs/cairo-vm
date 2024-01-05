@@ -77,6 +77,10 @@ PRINT_TEST_DIR=cairo_programs/print_feature
 PRINT_TEST_FILES:=$(wildcard $(PRINT_TEST_DIR)/*.cairo)
 COMPILED_PRINT_TESTS:=$(patsubst $(PRINT_TEST_DIR)/%.cairo, $(PRINT_TEST_DIR)/%.json, $(PRINT_TEST_FILES))
 
+GARAGA_TEST_DIR=cairo_programs/garaga
+GARAGA_TEST_FILES:=$(wildcard $(GARAGA_TEST_DIR)/*.cairo)
+COMPILED_GARAGA_TESTS:=$(patsubst $(GARAGA_TEST_DIR)/%.cairo, $(GARAGA_TEST_DIR)/%.json, $(GARAGA_TEST_FILES))
+
 NORETROCOMPAT_DIR:=cairo_programs/noretrocompat
 NORETROCOMPAT_FILES:=$(wildcard $(NORETROCOMPAT_DIR)/*.cairo)
 COMPILED_NORETROCOMPAT_TESTS:=$(patsubst $(NORETROCOMPAT_DIR)/%.cairo, $(NORETROCOMPAT_DIR)/%.json, $(NORETROCOMPAT_FILES))
@@ -100,6 +104,9 @@ $(BAD_TEST_DIR)/%.json: $(BAD_TEST_DIR)/%.cairo
 	cairo-compile $< --output $@
 
 $(PRINT_TEST_DIR)/%.json: $(PRINT_TEST_DIR)/%.cairo
+	cairo-compile $< --output $@
+
+$(GARAGA_TEST_DIR)/%.json: $(GARAGA_TEST_DIR)/%.cairo
 	cairo-compile $< --output $@
 
 # ======================
@@ -218,7 +225,7 @@ run:
 check:
 	cargo check
 
-cairo_test_programs: $(COMPILED_TESTS) $(COMPILED_BAD_TESTS) $(COMPILED_NORETROCOMPAT_TESTS) $(COMPILED_PRINT_TESTS)
+cairo_test_programs: $(COMPILED_TESTS) $(COMPILED_BAD_TESTS) $(COMPILED_NORETROCOMPAT_TESTS) $(COMPILED_PRINT_TESTS) $(COMPILED_GARAGA_TESTS)
 cairo_proof_programs: $(COMPILED_PROOF_TESTS)
 cairo_bench_programs: $(COMPILED_BENCHES)
 cairo_1_test_contracts: $(CAIRO_1_COMPILED_CASM_CONTRACTS)
@@ -305,6 +312,7 @@ clean:
 	rm -f $(BENCH_DIR)/*.json
 	rm -f $(BAD_TEST_DIR)/*.json
 	rm -f $(PRINT_TEST_DIR)/*.json
+	rm -f $(GARAGA_TEST_DIR)/*.json
 	rm -f $(CAIRO_1_CONTRACTS_TEST_DIR)/*.sierra
 	rm -f $(CAIRO_1_CONTRACTS_TEST_DIR)/*.casm
 	rm -f $(TEST_PROOF_DIR)/*.json

@@ -33,6 +33,7 @@ use crate::{
     hint_processor::{
         builtin_hint_processor::{
             bigint::{bigint_pack_div_mod_hint, bigint_safe_div_hint},
+            bitlength::get_felt_bitlength,
             blake2s_utils::{
                 blake2s_add_uint256, blake2s_add_uint256_bigend, compute_blake2s, finalize_blake2s,
             },
@@ -47,7 +48,6 @@ use crate::{
             },
             ec_utils::{chained_ec_op_random_ec_point_hint, random_ec_point_hint, recover_y_hint},
             find_element_hint::{find_element, search_sorted_lower},
-            garaga::get_felt_bitlength,
             hint_code,
             keccak_utils::{
                 split_input, split_n_bytes, split_output, split_output_mid_low_high, unsafe_keccak,
@@ -118,6 +118,9 @@ use crate::hint_processor::builtin_hint_processor::skip_next_instruction::skip_n
 
 #[cfg(feature = "print")]
 use crate::hint_processor::builtin_hint_processor::print::{print_array, print_dict, print_felt};
+
+#[cfg(feature = "garaga")]
+use crate::hint_processor::builtin_hint_processor::garaga::fq_bigint_add::fq_bigint_add;
 
 use super::blake2s_utils::example_blake2s_compress;
 
@@ -825,6 +828,10 @@ impl HintProcessorLogic for BuiltinHintProcessor {
             #[cfg(feature = "print")]
             hint_code::PRINT_DICT => {
                 print_dict(vm, exec_scopes, &hint_data.ids_data, &hint_data.ap_tracking)
+            }
+            #[cfg(feature = "garaga")]
+            hint_code::BIG_INT_ADD => {
+                fq_bigint_add(vm, &hint_data.ids_data, &hint_data.ap_tracking, constants)
             }
             code => Err(HintError::UnknownHint(code.to_string().into_boxed_str())),
         }

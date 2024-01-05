@@ -1,4 +1,5 @@
 pub mod bigint;
+pub mod bitlength;
 pub mod blake2s_hash;
 pub mod blake2s_utils;
 pub mod builtin_hint_processor_definition;
@@ -9,6 +10,7 @@ pub mod ec_recover;
 pub mod ec_utils;
 pub mod field_arithmetic;
 pub mod find_element_hint;
+#[cfg(feature = "garaga")]
 pub mod garaga;
 pub mod hint_code;
 pub mod hint_utils;

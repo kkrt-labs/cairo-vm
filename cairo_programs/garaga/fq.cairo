@@ -11,7 +11,7 @@ from starkware.cairo.common.cairo_builtins import BitwiseBuiltin
 from starkware.cairo.common.registers import get_fp_and_pc
 from starkware.cairo.common.math import abs_value, split_felt
 
-from src.bn254.curve import (
+from cairo_programs.garaga.curve import (
     P0,
     P1,
     P2,
@@ -27,19 +27,6 @@ from src.bn254.curve import (
 const SHIFT_MIN_BASE = SHIFT - BASE;
 const SHIFT_MIN_P2 = SHIFT - P2 - 1;
 
-func unrededucedUint256_to_BigInt3{range_check_ptr}(x: Uint256) -> (res: BigInt3*) {
-    alloc_locals;
-    let (low_bigint3) = felt_to_bigint3(x.low);
-    let (high_bigint3) = felt_to_bigint3(x.high);
-    let res = reduce_3(
-        UnreducedBigInt3(
-            d0=low_bigint3.d0 + SHIFT * high_bigint3.d0,
-            d1=low_bigint3.d1 + SHIFT * high_bigint3.d1,
-            d2=low_bigint3.d2 + SHIFT * high_bigint3.d2,
-        ),
-    );
-    return (res,);
-}
 
 func felt_to_bigint3{range_check_ptr}(x: felt) -> (res: BigInt3) {
     let (high, low) = split_felt(x);
