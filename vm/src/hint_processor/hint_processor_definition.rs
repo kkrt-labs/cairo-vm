@@ -13,6 +13,7 @@ use crate::vm::vm_core::VirtualMachine;
 
 use super::builtin_hint_processor::builtin_hint_processor_definition::HintProcessorData;
 use felt::Felt252;
+use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "arbitrary")]
 use arbitrary::Arbitrary;
@@ -79,7 +80,7 @@ fn get_ids_data(
 }
 
 #[cfg_attr(feature = "arbitrary", derive(Arbitrary))]
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub struct HintReference {
     pub offset1: OffsetValue,
     pub offset2: OffsetValue,
