@@ -553,7 +553,7 @@ pub mod test_utils {
                         .trackers
                         .get_mut(&$tracker_num)
                         .unwrap()
-                        .get_value(&MaybeRelocatable::from($key)),
+                        .get_value(&MaybeRelocatable::from($key).into()),
                     Ok(x) if x == &MaybeRelocatable::from($val)
                 ));
             *
@@ -582,7 +582,7 @@ pub mod test_utils {
         ($exec_scopes:expr, $tracker_num:expr, $( ($key:expr, $val:expr )),* ) => {
             let mut tracker = DictTracker::new_empty(relocatable!($tracker_num, 0));
             $(
-            tracker.insert_value(&MaybeRelocatable::from($key), &MaybeRelocatable::from($val));
+            tracker.insert_value(&MaybeRelocatable::from($key).into(), &MaybeRelocatable::from($val));
             )*
             let mut dict_manager = DictManager::new();
             dict_manager.trackers.insert(2, tracker);
@@ -602,7 +602,7 @@ pub mod test_utils {
         ($exec_scopes:expr, $tracker_num:expr,$default:expr, $( ($key:expr, $val:expr )),* ) => {
             let mut tracker = DictTracker::new_default_dict(relocatable!($tracker_num, 0), &MaybeRelocatable::from($default), None);
             $(
-            tracker.insert_value(&MaybeRelocatable::from($key), &MaybeRelocatable::from($val));
+            tracker.insert_value(&MaybeRelocatable::from($key).into(), &MaybeRelocatable::from($val));
             )*
             let mut dict_manager = DictManager::new();
             dict_manager.trackers.insert(2, tracker);
@@ -860,7 +860,7 @@ mod test {
     fn check_dictionary_pass() {
         let mut tracker = DictTracker::new_empty(relocatable!(2, 0));
         tracker.insert_value(
-            &MaybeRelocatable::from(crate::Felt252::from(5)),
+            &MaybeRelocatable::from(crate::Felt252::from(5)).into(),
             &MaybeRelocatable::from(crate::Felt252::from(10)),
         );
         let mut dict_manager = DictManager::new();
@@ -877,7 +877,7 @@ mod test {
     #[should_panic]
     fn check_dictionary_fail() {
         let mut tracker = DictTracker::new_empty(relocatable!(2, 0));
-        tracker.insert_value(&MaybeRelocatable::from(5), &MaybeRelocatable::from(10));
+        tracker.insert_value(&MaybeRelocatable::from(5).into(), &MaybeRelocatable::from(10));
         let mut dict_manager = DictManager::new();
         dict_manager.trackers.insert(2, tracker);
         let mut exec_scopes = ExecutionScopes::new();
