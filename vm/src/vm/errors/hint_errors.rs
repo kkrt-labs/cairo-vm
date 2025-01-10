@@ -1,7 +1,7 @@
 // The `(*.0).0` syntax of thiserror falsely triggers this clippy warning
 #![allow(clippy::explicit_auto_deref)]
 
-use crate::stdlib::prelude::*;
+use crate::{hint_processor::builtin_hint_processor::dict_manager::DictKey, stdlib::prelude::*};
 
 use thiserror_no_std::Error;
 
@@ -63,7 +63,7 @@ pub enum HintError {
     #[error("Dict Error: No dict tracker found for segment {0}")]
     NoDictTracker(isize),
     #[error("Dict Error: No value found for key: {0}")]
-    NoValueForKey(Box<MaybeRelocatable>),
+    NoValueForKey(Box<DictKey>),
     #[error("find_element(): No value found for key: {0}")]
     NoValueForKeyFindElement(Box<Felt252>),
     #[error("Assertion failed, a = {} % PRIME is not less than b = {} % PRIME", (*.0).0, (*.0).1)]
