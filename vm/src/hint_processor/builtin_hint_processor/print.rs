@@ -3,7 +3,7 @@ use core::fmt::{Debug, Formatter};
 use crate::Felt252;
 use num_traits::ToPrimitive;
 
-use crate::hint_processor::builtin_hint_processor::dict_manager::Dictionary;
+use crate::hint_processor::builtin_hint_processor::dict_manager::{DictKey, Dictionary};
 use crate::hint_processor::builtin_hint_processor::hint_utils::{
     get_integer_from_var_name, get_ptr_from_var_name,
 };
@@ -101,7 +101,11 @@ pub fn print_dict(
 
     let mut acc = HashMap::new();
     for (k, v) in map.iter() {
-        let key = k.get_int_ref().ok_or_else(|| {
+        let k_unsafe = match k {
+            DictKey::Simple(value) => value,
+            DictKey::Compound(_values) => panic!("Unimplemented print for compund dict keys"),
+        };
+        let key = k_unsafe.get_int_ref().ok_or_else(|| {
             HintError::CustomHint(String::from("Expected felt key for dict").into_boxed_str())
         })?;
         match v {
