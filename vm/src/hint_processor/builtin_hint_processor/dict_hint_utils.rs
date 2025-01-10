@@ -18,6 +18,7 @@ use crate::{
     serde::deserialize_program::ApTracking,
 };
 
+use super::dict_manager::DictKey;
 use super::{dict_manager::DictManager, hint_utils::get_maybe_relocatable_from_var_name};
 
 //DictAccess struct has three memebers, so the size of DictAccess* is 3
@@ -25,10 +26,10 @@ pub const DICT_ACCESS_SIZE: usize = 3;
 
 fn copy_initial_dict(
     exec_scopes: &mut ExecutionScopes,
-) -> Option<HashMap<MaybeRelocatable, MaybeRelocatable>> {
-    let mut initial_dict: Option<HashMap<MaybeRelocatable, MaybeRelocatable>> = None;
+) -> Option<HashMap<DictKey, MaybeRelocatable>> {
+    let mut initial_dict: Option<HashMap<DictKey, MaybeRelocatable>> = None;
     if let Some(variable) = exec_scopes.get_local_variables().ok()?.get("initial_dict") {
-        if let Some(dict) = variable.downcast_ref::<HashMap<MaybeRelocatable, MaybeRelocatable>>() {
+        if let Some(dict) = variable.downcast_ref::<HashMap<DictKey, MaybeRelocatable>>() {
             initial_dict = Some(dict.clone());
         }
     }
@@ -116,7 +117,7 @@ pub fn dict_read(
     let mut dict = dict_manager_ref.borrow_mut();
     let tracker = dict.get_tracker_mut(dict_ptr)?;
     tracker.current_ptr.offset += DICT_ACCESS_SIZE;
-    let value = tracker.get_value(&key)?;
+    let value = tracker.get_value(&key.into())?;
     insert_value_from_var_name("value", value.clone(), vm, ids_data, ap_tracking)
 }
 
@@ -145,9 +146,9 @@ pub fn dict_write(
     //Tracker set to track next dictionary entry
     tracker.current_ptr.offset += DICT_ACCESS_SIZE;
     //Get previous value
-    let prev_value = tracker.get_value(&key)?.clone();
+    let prev_value = tracker.get_value(&key.clone().into())?.clone();
     //Insert new value into tracker
-    tracker.insert_value(&key, &new_value);
+    tracker.insert_value(&key.into(), &new_value);
     //Insert previous value into dict_ptr.prev_value
     //Addres for dict_ptr.prev_value should be dict_ptr* + 1 (defined above)
     vm.insert_value(dict_ptr_prev_value, prev_value)?;
@@ -181,7 +182,7 @@ pub fn dict_update(
     let mut dict = dict_manager_ref.borrow_mut();
     let tracker = dict.get_tracker_mut(dict_ptr)?;
     //Check that prev_value is equal to the current value at the given key
-    let current_value = tracker.get_value(&key)?;
+    let current_value = tracker.get_value(&(key.clone().into()))?;
     if current_value != &prev_value {
         return Err(HintError::WrongPrevValue(Box::new((
             prev_value,
@@ -190,7 +191,7 @@ pub fn dict_update(
         ))));
     }
     //Update Value
-    tracker.insert_value(&key, &new_value);
+    tracker.insert_value(&(key.into()), &new_value);
     tracker.current_ptr.offset += DICT_ACCESS_SIZE;
     Ok(())
 }
@@ -383,7 +384,7 @@ mod tests {
         dict_manager!(&mut exec_scopes, 2, (5, 12));
         assert_matches!(
             run_hint!(vm, ids_data, hint_code, &mut exec_scopes),
-            Err(HintError::NoValueForKey(bx)) if *bx == MaybeRelocatable::from(6)
+            Err(HintError::NoValueForKey(bx)) if *bx == MaybeRelocatable::from(6).into()
         );
     }
     #[test]
@@ -559,7 +560,7 @@ mod tests {
         //Execute the hint
         assert_matches!(
             run_hint!(vm, ids_data, hint_code, &mut exec_scopes),
-            Err(HintError::NoValueForKey(bx)) if *bx == MaybeRelocatable::from(5)
+            Err(HintError::NoValueForKey(bx)) if *bx == MaybeRelocatable::from(5).into()
         );
     }
 
@@ -658,7 +659,7 @@ mod tests {
         //Execute the hint
         assert_matches!(
             run_hint!(vm, ids_data, hint_code, &mut exec_scopes),
-            Err(HintError::NoValueForKey(bx)) if *bx == MaybeRelocatable::from(6)
+            Err(HintError::NoValueForKey(bx)) if *bx == MaybeRelocatable::from(6).into()
         );
     }
 
@@ -951,7 +952,7 @@ mod tests {
         );
         // Check that our relocatable was written into the dict
         let expected_dict = Dictionary::DefaultDictionary {
-            dict: HashMap::from([(MaybeRelocatable::from(5), MaybeRelocatable::from((1, 7)))]),
+            dict: HashMap::from([(MaybeRelocatable::from(5).into(), MaybeRelocatable::from((1, 7)))]),
             default_value: MaybeRelocatable::from(2),
         };
         let expeced_dict_tracker = DictTracker {
