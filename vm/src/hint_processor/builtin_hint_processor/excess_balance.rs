@@ -20,7 +20,7 @@ use crate::{
 use lazy_static::lazy_static;
 
 use super::{
-    dict_manager::DictManager,
+    dict_manager::{DictKey, DictManager},
     hint_utils::{
         get_constant_from_var_name, get_integer_from_var_name, get_ptr_from_var_name,
         insert_value_from_var_name,
@@ -128,7 +128,7 @@ fn dict_ref_from_var_name<'a>(
     dict_manager: &'a DictManager,
     ids_data: &'a HashMap<String, HintReference>,
     ap_tracking: &'a ApTracking,
-) -> Option<&'a HashMap<MaybeRelocatable, MaybeRelocatable>> {
+) -> Option<&'a HashMap<DictKey, MaybeRelocatable>> {
     let prices_cache_ptr = get_ptr_from_var_name(var_name, vm, ids_data, ap_tracking).ok()?;
     Some(
         dict_manager
@@ -150,9 +150,13 @@ fn prices_dict(
 
     // Apply data type conversions
     let apply_conversion =
-        |k: &MaybeRelocatable, v: &MaybeRelocatable| -> Option<(String, Decimal)> {
+        |k: &DictKey, v: &MaybeRelocatable| -> Option<(String, Decimal)> {
+            let k_unsafe = match k {
+                DictKey::Simple(k) => k,
+                DictKey::Compound(_) => panic!("Compound keys not supported"),
+            };
             Some((
-                felt_to_trimmed_str(k.get_int_ref()?)?,
+                felt_to_trimmed_str(k_unsafe.get_int_ref()?)?,
                 felt_to_scaled_decimal(v.get_int_ref()?)?,
             ))
         };
@@ -175,9 +179,13 @@ fn indices_dict(
 
     // Apply data type conversions
     let apply_conversion =
-        |k: &MaybeRelocatable, v: &MaybeRelocatable| -> Option<(String, Decimal)> {
+        |k: &DictKey, v: &MaybeRelocatable| -> Option<(String, Decimal)> {
+            let k_unsafe = match k {
+                DictKey::Simple(k) => k,
+                DictKey::Compound(_) => panic!("Compound keys not supported"),
+            };
             Some((
-                felt_to_trimmed_str(k.get_int_ref()?)?,
+                felt_to_trimmed_str(k_unsafe.get_int_ref()?)?,
                 felt_to_scaled_decimal(v.get_int_ref()?)?,
             ))
         };
@@ -199,9 +207,13 @@ fn perps_dict(
 
     // Apply data type conversions
     let apply_conversion =
-        |k: &MaybeRelocatable, v: &MaybeRelocatable| -> Option<(String, MarginParams)> {
+        |k: &DictKey, v: &MaybeRelocatable| -> Option<(String, MarginParams)> {
+            let k_unsafe = match k {
+                DictKey::Simple(k) => k,
+                DictKey::Compound(_) => panic!("Compound keys not supported"),
+            };
             Some((
-                felt_to_trimmed_str(k.get_int_ref()?)?,
+                felt_to_trimmed_str(k_unsafe.get_int_ref()?)?,
                 MarginParams::read_from_memory(&vm.segments.memory, v.get_relocatable()?)?,
             ))
         };
@@ -223,8 +235,12 @@ fn fees_dict(
 
     // Apply data type conversions
     let apply_conversion =
-        |k: &MaybeRelocatable, v: &MaybeRelocatable| -> Option<(Felt252, Decimal)> {
-            Some((k.get_int()?, felt_to_scaled_decimal(v.get_int_ref()?)?))
+        |k: &DictKey, v: &MaybeRelocatable| -> Option<(Felt252, Decimal)> {
+            let k_unsafe = match k {
+                DictKey::Simple(k) => k,
+                DictKey::Compound(_) => panic!("Compound keys not supported"),
+            };
+            Some((k_unsafe.get_int()?, felt_to_scaled_decimal(v.get_int_ref()?)?))
         };
 
     fees.iter()
