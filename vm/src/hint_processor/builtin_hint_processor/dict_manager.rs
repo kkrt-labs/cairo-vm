@@ -73,7 +73,7 @@ impl Dictionary {
         match self {
             Self::SimpleDictionary(dict) => dict.get(key),
             Self::DefaultDictionary { dict, default_value } => {
-                Some(dict.entry(key.clone()).or_insert_with(|| default_value.clone()))
+                dict.get(key).or(Some(default_value))
             }
         }
     }
