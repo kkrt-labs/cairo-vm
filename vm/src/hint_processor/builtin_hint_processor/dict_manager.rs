@@ -234,6 +234,16 @@ impl DictTracker {
             .ok_or_else(|| HintError::NoValueForKey(Box::new(key.clone())))
     }
 
+    pub fn get_default_value(&self) -> Option<&MaybeRelocatable> {
+        match &self.data {
+            Dictionary::SimpleDictionary(_) => None,
+            Dictionary::DefaultDictionary {
+                default_value,
+                ..
+            } => Some(default_value),
+        }
+    }
+
     pub fn insert_value(&mut self, key: &DictKey, val: &MaybeRelocatable) {
         self.data.insert(key, val);
     }
