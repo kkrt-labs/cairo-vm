@@ -2,6 +2,8 @@
 
 #### Upcoming Changes
 
+- fix: `mod_builtin_fill_memory` raises when `n=0` [#1935](https://github.com/lambdaclass/cairo-vm/pull/1935)
+
 - feat: make `builtins` public in `Program` struct [#1908](https://github.com/lambdaclass/cairo-vm/pull/1907)
 
 - fix(BREAKING): Fix no trace padding flow in proof mode [#1909](https://github.com/lambdaclass/cairo-vm/pull/1909)
