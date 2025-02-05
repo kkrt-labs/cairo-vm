@@ -22,6 +22,8 @@
 
 * fix: Check overflow in cairo pie address calculation [#1945](https://github.com/lambdaclass/cairo-vm/pull/1945)
 
+- fix: `mod_builtin_fill_memory` raises when `n=0` [#1935](https://github.com/lambdaclass/cairo-vm/pull/1935)
+
 #### [2.0.0-rc5] - 2025-02-24
 
 * fix: Fix Cairo Pie limiting the number of segments to 2^16 [#1960](https://github.com/lambdaclass/cairo-vm/pull/1960)
@@ -36,6 +38,8 @@
 * feat: implement `Blake2s` opcode in VM [#1927](https://github.com/lambdaclass/cairo-vm/pull/1927)
 
 * feat: remove `NonZeroReservedBits` from `VirtualMachineError` [#1948](https://github.com/lambdaclass/cairo-vm/pull/1948)
+
+- feat: make `builtins` public in `Program` struct [#1908](https://github.com/lambdaclass/cairo-vm/pull/1907)
 
 * feat: set `encoded_instruction` to be u128 for opcode_extensions to come [#1940](https://github.com/lambdaclass/cairo-vm/pull/1940)
 
