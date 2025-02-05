@@ -2,7 +2,11 @@
 
 #### Upcoming Changes
 
+- fix: `mod_builtin_fill_memory` raises when `n=0` [#1935](https://github.com/lambdaclass/cairo-vm/pull/1935)
+
 * feat: remove `NonZeroReservedBits` from `VirtualMachineError` [#1948](https://github.com/lambdaclass/cairo-vm/pull/1948)
+
+- feat: make `builtins` public in `Program` struct [#1908](https://github.com/lambdaclass/cairo-vm/pull/1907)
 
 * feat: set `encoded_instruction` to be u128 for opcode_extensions to come [#1940](https://github.com/lambdaclass/cairo-vm/pull/1940)
 
