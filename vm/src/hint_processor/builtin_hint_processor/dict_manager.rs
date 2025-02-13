@@ -48,6 +48,7 @@ impl From<Vec<MaybeRelocatable>> for DictKey {
 ///Uses the segment index to associate the corresponding python dict with the Cairo dict.
 pub struct DictManager {
     pub trackers: HashMap<isize, DictTracker>,
+    pub preimages: HashMap<MaybeRelocatable, DictKey>,
 }
 
 #[derive(PartialEq, Eq, Debug, Clone)]
@@ -91,6 +92,7 @@ impl DictManager {
     pub fn new() -> Self {
         DictManager {
             trackers: HashMap::<isize, DictTracker>::new(),
+            preimages: HashMap::<MaybeRelocatable, DictKey>::new(),
         }
     }
     //Creates a new Cairo dictionary. The values of initial_dict can be integers, tuples or
