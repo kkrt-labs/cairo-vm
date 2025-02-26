@@ -149,7 +149,7 @@ pub fn dict_write(
     //Insert new value into tracker
     tracker.insert_value(&key, &new_value);
     //Insert previous value into dict_ptr.prev_value
-    //Addres for dict_ptr.prev_value should be dict_ptr* + 1 (defined above)
+    //Address for dict_ptr.prev_value should be dict_ptr* + 1 (defined above)
     vm.insert_value(dict_ptr_prev_value, prev_value)?;
     Ok(())
 }
