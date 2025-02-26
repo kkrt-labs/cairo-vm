@@ -199,7 +199,7 @@ namespace fq {
     }
 
     // Computes a * b^{-1} modulo p
-    // NOTE: The modular inverse of b modulo p is computed in a hint and verified outside the hind with a multiplicaiton
+    // NOTE: The modular inverse of b modulo p is computed in a hint and verified outside the hind with a multiplication
     func div{range_check_ptr}(a: Uint256, b: Uint256, p: Uint256) -> Uint256 {
         alloc_locals;
         local b_inverse_mod_p: Uint256;

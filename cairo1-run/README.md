@@ -97,7 +97,7 @@ Example:
 
 ## Libfunc `get_builtin_costs` &  function `poseidon_hash_many`
 Compiling without gas checks removes libfuncs associated with gas checks that are generated during compilation but it cannot remove those in the cairo code itself. Therefore code using the external functions on the `gas` corelib moudle (`withdraw_gas`, `withdraw_gas_all` & `get_builtin_costs`) will fail to compile.
-One notable case of this issue is the `poseidon_hash_span` function, which uses `get_builtin_costs` in its implementation. We advise using the `HashStateTrait` impl instead. The `poseidon_hash_span` function can also be modified so that it no longer relies on gas, an example of this can be found on the test file `poseidon.cairo` under the `cairo_porgrams/cairo-1-programs` folder.
+One notable case of this issue is the `poseidon_hash_span` function, which uses `get_builtin_costs` in its implementation. We advise using the `HashStateTrait` impl instead. The `poseidon_hash_span` function can also be modified so that it no longer relies on gas, an example of this can be found on the test file `poseidon.cairo` under the `cairo_programs/cairo-1-programs` folder.
 
 ## Nullable<Box<T>>
 There is currently a bug in cairo 2.6.3 affecting `Nullable<Box<T>>` types.
