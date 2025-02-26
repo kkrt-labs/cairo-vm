@@ -3850,7 +3850,7 @@ mod tests {
             HashMap::new(),
         ))];
 
-        //Initialzie registers
+        //Initialize registers
         run_context!(vm, 3, 2, 2);
 
         //Create program and execution segments
