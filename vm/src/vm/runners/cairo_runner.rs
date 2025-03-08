@@ -144,16 +144,16 @@ pub struct CairoRunner {
     pub vm: VirtualMachine,
     pub(crate) program: Program,
     layout: CairoLayout,
-    final_pc: Option<Relocatable>,
+    pub final_pc: Option<Relocatable>,
     pub program_base: Option<Relocatable>,
-    execution_base: Option<Relocatable>,
+    pub execution_base: Option<Relocatable>,
     entrypoint: Option<usize>,
-    initial_ap: Option<Relocatable>,
-    initial_fp: Option<Relocatable>,
-    initial_pc: Option<Relocatable>,
+    pub initial_ap: Option<Relocatable>,
+    pub initial_fp: Option<Relocatable>,
+    pub initial_pc: Option<Relocatable>,
     run_ended: bool,
     segments_finalized: bool,
-    execution_public_memory: Option<Vec<usize>>,
+    pub execution_public_memory: Option<Vec<usize>>,
     pub(crate) runner_mode: RunnerMode,
     pub relocated_memory: Vec<Option<Felt252>>,
     pub exec_scopes: ExecutionScopes,
@@ -406,7 +406,7 @@ impl CairoRunner {
         Ok(())
     }
 
-    fn is_proof_mode(&self) -> bool {
+    pub fn is_proof_mode(&self) -> bool {
         self.runner_mode == RunnerMode::ProofModeCanonical
             || self.runner_mode == RunnerMode::ProofModeCairo1
     }
