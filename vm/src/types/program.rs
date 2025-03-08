@@ -61,7 +61,7 @@ use arbitrary::{Arbitrary, Unstructured};
 // Fields in `Program` (other than `SharedProgramData` itself) are used by the main logic.
 #[derive(Clone, Default, Debug, PartialEq, Eq)]
 pub struct SharedProgramData {
-    pub(crate) data: Vec<MaybeRelocatable>,
+    pub data: Vec<MaybeRelocatable>,
     pub hints_collection: HintsCollection,
     pub(crate) main: Option<usize>,
     //start and end labels will only be used in proof-mode
