@@ -58,6 +58,10 @@ pub struct DictTracker {
     pub data: Dictionary,
     //Pointer to the first unused position in the dict segment.
     pub current_ptr: Relocatable,
+    // Whether this dict was properly squashed
+    pub is_squashed: bool,
+    // An optional name to help debugging
+    pub name: Option<String>,
 }
 
 #[derive(PartialEq, Eq, Debug, Clone)]
@@ -181,6 +185,8 @@ impl DictTracker {
         DictTracker {
             data: Dictionary::SimpleDictionary(HashMap::new()),
             current_ptr: base,
+            is_squashed: true,
+            name: None,
         }
     }
 
@@ -195,6 +201,8 @@ impl DictTracker {
                 default_value: default_value.clone(),
             },
             current_ptr: base,
+            is_squashed: true,
+            name: None,
         }
     }
 
@@ -205,6 +213,8 @@ impl DictTracker {
         DictTracker {
             data: Dictionary::SimpleDictionary(initial_dict),
             current_ptr: base,
+            is_squashed: true,
+            name: None,
         }
     }
 
@@ -231,6 +241,7 @@ impl DictTracker {
     }
 
     pub fn get_value(&mut self, key: &DictKey) -> Result<&MaybeRelocatable, HintError> {
+        self.is_squashed = false;
         self.data
             .get(key)
             .ok_or_else(|| HintError::NoValueForKey(Box::new(key.clone())))
@@ -247,6 +258,7 @@ impl DictTracker {
     }
 
     pub fn insert_value(&mut self, key: &DictKey, val: &MaybeRelocatable) {
+        self.is_squashed = false;
         self.data.insert(key, val);
     }
 }
