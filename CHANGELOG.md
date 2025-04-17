@@ -12,6 +12,8 @@
 
 * fix: Keep None values in memory segments for the prover input info [#2021](https://github.com/lambdaclass/cairo-vm/pull/2021)
 
+* feat(BREAKING): add support for accessible scopes in hint processor [#2042](https://github.com/lambdaclass/cairo-vm/pull/2042)
+
 * dev: add Memory::get_maybe_relocatable  [#2039](https://github.com/lambdaclass/cairo-vm/pull/2039)
 
 * refactor: remove duplicated get_val function [#2065](https://github.com/lambdaclass/cairo-vm/pull/2065)
