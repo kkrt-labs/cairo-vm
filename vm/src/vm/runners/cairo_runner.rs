@@ -4620,6 +4620,7 @@ mod tests {
                     members: None,
                     cairo_type: None,
                     size: None,
+                    destination: None,
                 },
             )]
             .into_iter()
@@ -4649,6 +4650,7 @@ mod tests {
                         members: None,
                         cairo_type: None,
                         size: None,
+                        destination: None,
                     },
                 ),
                 (
@@ -4661,6 +4663,7 @@ mod tests {
                         members: None,
                         cairo_type: None,
                         size: None,
+                        destination: None,
                     },
                 ),
             ]
@@ -4691,6 +4694,7 @@ mod tests {
                     members: None,
                     cairo_type: None,
                     size: None,
+                    destination: None,
                 },
             )]
             .into_iter()
