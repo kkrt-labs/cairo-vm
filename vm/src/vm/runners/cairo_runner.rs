@@ -1,3 +1,4 @@
+use tracing;
 use crate::{
     air_private_input::AirPrivateInput,
     air_public_input::{PublicInput, PublicInputError},
@@ -1054,6 +1055,15 @@ impl CairoRunner {
             );
         }
 
+        
+        // Log execution resources with structured fields
+        tracing::info!(
+            target: "vm::vm::runner",
+            n_steps = n_steps,
+            n_memory_holes = n_memory_holes,
+            ?builtin_instance_counter,
+            "Execution resources"
+        );
         Ok(ExecutionResources {
             n_steps,
             n_memory_holes,
