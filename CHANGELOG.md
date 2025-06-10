@@ -1,5 +1,10 @@
 ## Cairo-VM Changelog
 
+## [Unreleased]
+
+* feat: Add structured logging for ExecutionResources [#9](https://github.com/kkrt-labs/cairo-vm/pull/9)
+
+
 #### Upcoming Changes
 
 * feat: remove `NonZeroReservedBits` from `VirtualMachineError` [#1948](https://github.com/lambdaclass/cairo-vm/pull/1948)
